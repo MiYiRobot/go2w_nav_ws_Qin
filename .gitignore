@@ -9,6 +9,9 @@
 rosbag/
 map/
 third_party/
+build/
+install/
+log/
 
 # ROS runtime state
 /.ros/
@@ -34,13 +37,6 @@ htmlcov/
 Thumbs.db
 
 # Locally copied legacy dependencies. The ROS 2 build uses system GLFW, GLEW,
-
-# OpenGL and GLM packages instead; see README.md for installation commands.
-/src/simulator/local_sensing/third_party/
-/src/simulator/local_sensing/include/GL/
-/src/simulator/local_sensing/include/glad/
-/src/simulator/local_sensing/include/glad.c
-/src/simulator/local_sensing/include/glm/
 
 # Native build artifacts
 *.o
