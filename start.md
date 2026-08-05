@@ -11,7 +11,9 @@
 ~/go2w_nav_ws_Qin/scripts/start_scanplanner.sh
 ~/go2w_nav_ws_Qin/scripts/start_go2w_cmd_bridge.sh
 
-
+录制节点
+~/go2w_nav_ws_Qin/scripts/start_record.sh
 
 Rviz节点
 ros2 launch scan_planner rviz.launch.py
+
