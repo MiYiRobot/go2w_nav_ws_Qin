@@ -1,0 +1,14 @@
+# ROS 2 编译与日志文件
+build/
+install/
+log/
+
+# 数据包与地图文件（如需推送到 GitHub，可删掉下面两行）
+rosbag/
+maps/
+
+# IDE 与系统配置文件
+.vscode/
+.idea/
+.DS_Store
+*.swp

@@ -1,0 +1,34 @@
+relocalization_bin_file: /home/luo/go2w_nav_ws_Qin/maps/relocal_dummy/dummy.bin
+relocalization_pcd_file: /home/luo/go2w_nav_ws_Qin/maps/relocal_dummy/dummy.pcd
+map_package_dir: /home/luo/go2w_nav_ws_Qin/maps/jie_maps/big_localization_raw
+show_rviz: false
+show_map_gui: false
+publish_d1_odom: false
+use_static_odom_to_base: true
+d1_controller:
+  ros__parameters:
+    robot_center_offset_frame: odin1_base_link    # 机器人控制参考点
+    robot_center_offset_x: -0.18                  # 控制点相对于机器人中心（雷达位置）x方向上的偏移 
+    robot_center_offset_y: 0.0    # y方向上的偏移
+    robot_center_offset_z: 0.0    # z方向上的偏移
+    tracking_point_reached_xy_tolerance: 0.4 # 机器人距离当前追踪点多近时，则追踪下一个点
+    tracking_point_marker_scale: 0.28    # rviz跟踪点大小
+    enable_tracking_debug_view: true    # 是否在rviz中显示跟踪点调试视图
+    tracking_debug_view_size_px: 640    # rviz跟踪点调试视图大小（像素）
+    tracking_debug_view_pixels_per_meter: 80.0   # rviz跟踪点调试视图中每米对应的像素数
+    tracking_debug_view_frequency: 10.0   # rviz跟踪点调试视图更新频率（Hz）
+    linear_gain: 1.0   # 线速度比例增益
+    lateral_gain: 0.8  # 横向速度比例增益
+    heading_gain: 0.8   # 航向角速度比例增益
+    cross_track_angular_gain: 0.5 #横向偏差修正增益
+    final_yaw_gain: 0.3   #最终航向角修正增益
+    enable_lateral_motion: true    # 是否允许横向运动
+    max_linear_speed: 0.7  # 最大线速度
+    max_lateral_speed: 0.5  # 最大横向速度
+    max_angular_speed: 0.9  # 最大角速度
+    align_final_yaw: true   # 是否在到达目标点后对齐最终航向角
+    linear_deadband: 0.05  # 线速度死区
+    lateral_deadband: 0.05  # 横向速度死区
+    angular_deadband: 0.05  # 角速度死区
+    goal_position_tolerance: 0.1  # 机器人距离目标点多近时，则认为到达目标点
+    goal_yaw_tolerance: 0.2   # 机器人航向角与目标点航向角差值多大时，则认为到达目标点

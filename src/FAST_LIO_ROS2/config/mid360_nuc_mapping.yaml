@@ -1,0 +1,50 @@
+/**:
+    ros__parameters:
+        feature_extract_enable: false #是否启用特征提取（如角点、平面点）
+        point_filter_num: 3 #点云降采样频率，每几个点保留一个
+        max_iteration: 3  #最大迭代次数
+        filter_size_surf: 0.5  #平面特征点的滤波尺寸（单位：米）
+        filter_size_map: 0.5  #地图点的滤波尺寸
+        cube_side_length: 200.0   #地图立方体的边长（单位：米）  111
+        runtime_pos_log_enable: false  #是否启用运行时位置日志
+        map_file_path: "./test.pcd"  #地图文件的保存路径
+
+        common:
+            lid_topic:  "/livox/lidar"  #激光雷达点云数据的话题名称
+            imu_topic:  "/livox/imu"    #IMU 数据的话题名称
+            time_sync_en: false         # ONLY turn on when external time synchronization is really not possible
+            time_offset_lidar_to_imu: 0.0 # Time offset between lidar and IMU calibrated by other algorithms, e.g. LI-Init (can be found in README).
+                                        # This param will take effect no matter what time_sync_en is. So if the time offset is not known exactly, please set as 0.0
+
+        preprocess:
+            lidar_type: 1                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR, 3 for ouster LiDAR, 4 for any other pointcloud input
+            scan_line:  4               #扫描线数（适用于多线雷达）
+            blind: 0.5          #盲区距离（单位：米），小于该值的点将被过滤         
+            timestamp_unit: 3   #时间戳单位（1: 秒，2: 毫秒，3: 微秒）
+            scan_rate: 10       #扫描频率（Hz）
+
+        mapping:
+            acc_cov: 0.1    #加速度计噪声协方差
+            gyr_cov: 0.1    #陀螺仪噪声协方差
+            b_acc_cov: 0.0001 #加速度计偏置噪声协方差
+            b_gyr_cov: 0.0001 #陀螺仪偏置噪声协方差
+            fov_degree:    360.0 #雷达视场角（度）
+            det_range:     50.0 #有效检测范围（单位：米） 111
+            extrinsic_est_en:  true      # true: enable the online estimation of IMU-LiDAR extrinsic
+            extrinsic_T: [ -0.011, -0.02329, 0.04412 ] #初始外参平移向量（x, y, z）
+            extrinsic_R: [ 1., 0., 0.,
+                            0., 1., 0.,
+                            0., 0., 1.] #初始外参旋转矩阵（3x3），这里是单位矩阵，表示初始无旋转
+
+        publish:
+            path_en: true                # true: publish Path  是否发布路径（Path）
+            effect_map_en: false         # true: publish Effects  否发布效果点云（一般用于调试）
+            map_en: false                 # true: publish Map cloud  是否发布地图点云 111
+            scan_publish_en:  true       # false: close all the point cloud output  是否发布扫描点云
+            dense_publish_en: false      # false: low down the points number in a global-frame point clouds scan. 是否发布稠密点云（可能降低频率）
+            scan_bodyframe_pub_en: false  # true: output the point cloud scans in IMU-body-frame 是否在 IMU 体坐标系下发布点云
+
+        pcd_save:
+            pcd_save_en: false      #是否启用点云保存功能
+            interval: -1                 # how many LiDAR frames saved in each pcd file; 
+                                        # -1 : all frames will be saved in ONE pcd file, may lead to memory crash when having too much frames.
