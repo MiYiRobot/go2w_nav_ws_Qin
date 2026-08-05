@@ -11,7 +11,7 @@ echo "Starting rosbag to record data..."
 echo "ROS_DOMAIN_ID=$ROS_DOMAIN_ID"
 echo "bag will save to: $(pwd)"
 
-ros2 bag record \
+ros2 bag record -s mcap \
   /tf \
   /tf_static \
   /localization \
@@ -25,6 +25,7 @@ ros2 bag record \
   /robot_description    \
   /a_star_list \
   /global_list \
+  /global_point \
   /goal_pose \
   /grid_map/occupancy \
   /grid_map/occupancy_inflate \
