@@ -17,3 +17,4 @@
 Rviz节点
 ros2 launch scan_planner rviz.launch.py
 
+test
