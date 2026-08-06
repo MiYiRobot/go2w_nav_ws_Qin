@@ -1,7 +1,7 @@
 closed_loop_controller:
   ros__parameters:
     use_sim_time: false
-    time_forward: 0.5 #0.4 #0.7 #0.8     #预测机器人前方多少秒的方向
+    time_forward: 0.3 #0.5 #0.7 #0.8     #预测机器人前方多少秒的方向
     heading_error_threshold: 0.8 #1.57 #1.0 #0.8  #机器人航向误差超过该阈值时，暂停执行轨迹，等待机器人转向到正确航向
     kp_pos: 0.5 #0.8     # 位置P
     kp_yaw: 0.8 #1.5 #1.5   # 航向P
