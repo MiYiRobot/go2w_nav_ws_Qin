@@ -15,8 +15,8 @@ ros2 run go2w_cmd_bridge go2w_cmd_bridge \
   -p network_interface:=enp2s0 \
   -p cmd_vel_topic:=/cmd_vel \
   -p enable_topic:=/go2w_cmd_enable \
-  -p max_vx:=0.5 \
-  -p max_vy:=0.5 \
+  -p max_vx:=0.55 \
+  -p max_vy:=0.55 \
   -p max_vyaw:=0.6 \
   -p cmd_timeout:=0.5 \
   -p start_enabled:=true \
