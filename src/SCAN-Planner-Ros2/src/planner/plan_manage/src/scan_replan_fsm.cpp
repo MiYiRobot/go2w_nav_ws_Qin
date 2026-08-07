@@ -837,6 +837,8 @@ namespace scan_planner
     finishProcess();  //判断是否连续重规划失败次数超过阈值，超过则进入紧急停止状态
 
     data_disp_.header.stamp = node_->now();
+    data_disp_.a = exec_state_;
+    data_disp_.b = replan_fail_count_;
     data_disp_pub_->publish(data_disp_);  //发布调试信息
   }
 
