@@ -1,14 +1,37 @@
 closed_loop_controller:
   ros__parameters:
     use_sim_time: false
-    time_forward: 0.4 #0.5 #0.7 #0.8     #预测机器人前方多少秒的方向
-    heading_error_threshold: 0.8 #1.57 #1.0 #0.8  #机器人航向误差超过该阈值时，暂停执行轨迹，等待机器人转向到正确航向
-    kp_pos: 0.5 #0.8     # 位置P
-    kp_yaw: 0.8 #1.5 #1.5   # 航向P
-    max_vx: 0.55 #0.75
-    max_vy: 0.4 #0.35
-    max_vyaw: 0.6 #1.0
+    time_forward: 0.5 #角度前馈
+    # yaw控制
+    heading_error_threshold: 0.5 #机器人航向误差超过该阈值时，暂停执行轨迹，等待机器人转向到正确航向
+    kp_yaw: 0.8 #航向P
+    kd_yaw: 0.05 #航向D
+    max_vyaw: 1.0
+    # x方向
+    kp_x: 0.75 
+    kd_x: 0.05
+    max_vx: 0.7
+    # y方向
+    kp_y: 0.2
+    kd_y: 0.01
+    max_vy: 0.2
+    #死区
     finish_dist: 0.15   #死区
+    x_deadzone: 0.01
+    y_deadzone: 0.01
+    yaw_deadzone: 0.01
+    # use_sim_time: false
+    # time_forward: 0.4 #0.5 #0.7 #0.8     #预测机器人前方多少秒的方向
+    # heading_error_threshold: 0.8 #1.57 #1.0 #0.8  #机器人航向误差超过该阈值时，暂停执行轨迹，等待机器人转向到正确航向
+    # kp_pos: 0.5 #0.8     # 位置P
+    # kp_yaw: 0.8 #1.5 #1.5   # 航向P
+    # max_vx: 0.55 #0.75
+    # max_vy: 0.4 #0.35
+    # max_vyaw: 0.6 #1.0
+    # finish_dist: 0.15   #死区
+
+
+
 
 open_loop_controller:
   ros__parameters:

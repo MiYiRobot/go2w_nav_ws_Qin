@@ -423,10 +423,11 @@ namespace scan_planner
       }
       else      //停止规划，进入急停状态
       {
+          have_target_ = false;
           RCLCPP_INFO(node_->get_logger(), "Navigation stopped");
 
           //停止时可以进入急停状态
-          changeFSMExecState(EMERGENCY_STOP, "STOP NAVIGATION");
+          changeFSMExecState(WAIT_TARGET, "STOP NAVIGATION");
       }
 
   }
@@ -717,7 +718,7 @@ namespace scan_planner
     case REPLAN_TRAJ:
     {
 
-      if (planFromCurrentTraj())      //重新生成轨迹
+      if (planFromCurrentTraj())      //重新生成轨迹，里面调用callReboundReplan
       {
         replan_fail_count_ = 0;
         changeFSMExecState(EXEC_TRAJ, "FSM");
@@ -809,8 +810,6 @@ namespace scan_planner
       }
       else    //等待差不多停下来时再切换状态
       {
-        if(navigation_started_)   //导航启动了，导航没启动就发布停止路径完了啥也不干
-        {
           if (enable_fail_safe_ && !need_hover_stop_ && odom_vel_.norm() < 0.1)     // 重新开始规划
             changeFSMExecState(GEN_NEW_TRAJ, "FSM");  
           else if (enable_fail_safe_ && need_hover_stop_ && odom_vel_.norm() < 0.1) //等待新的目标后再重新规划，重规划失败太多次才进入这里
@@ -822,11 +821,6 @@ namespace scan_planner
             trigger_ = false;
             changeFSMExecState(WAIT_TARGET, "EMERGENCY_EXIT");
           }
-        }
-        else
-        {
-          // RCLCPP_INFO(node_->get_logger(),"Stop!!! Wait for the start flag!");
-        }
       }
 
       flag_escape_emergency_ = false;

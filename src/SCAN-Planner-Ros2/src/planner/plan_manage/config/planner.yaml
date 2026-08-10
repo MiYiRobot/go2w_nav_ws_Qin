@@ -9,19 +9,19 @@ scan_planner_node:
     fsm.emergency_time: 1.0     #碰撞还有多久发生时急停，大于这个数先尝试重规划，否则急停
     fsm.fail_safe: true         #是否允许急停保护
     fsm.max_replan_fail_count: 1000   #连续规划失败多少次后进入停车
-    fsm.point_global_dist: 0.4  #全局规划取点间隔 
+    fsm.point_global_dist: 0.5  #全局规划取点间隔 
 
     grid_map.resolution: 0.1 #0.05   # 地图分辨率   0.1
     grid_map.sliding_map_size_x: 10.0 #滑动地图大小
     grid_map.sliding_map_size_y: 10.0
     grid_map.sliding_map_size_z: 5.0
-    grid_map.local_update_range_x: 10.0 #7.0  # 局部地图更新范围
-    grid_map.local_update_range_y: 10.0 #7.0
-    grid_map.local_update_range_z: 3.0 #2.5
+    grid_map.local_update_range_x: 5.0 #7.0  # 局部地图更新范围
+    grid_map.local_update_range_y: 5.0 #7.0
+    grid_map.local_update_range_z: 2.5 #2.5
     grid_map.map_sliding_en: true   #是否启用滑动地图
     grid_map.map_sliding_thresh: 0.2   #机器人移动多少距离后地图滑动
-    grid_map.double_cylinder_radius: 0.3 #0.35   #障碍物膨胀半径                                     0.5
-    grid_map.double_cylinder_offset: 0.3 #0.35 #0.18    #两个圆柱体中心距离                              参考：0.35
+    grid_map.double_cylinder_radius: 0.25 #0.35   #障碍物膨胀半径                                     0.5
+    grid_map.double_cylinder_offset: 0.18 #0.35 #0.18    #两个圆柱体中心距离                              参考：0.35
     grid_map.body_height: 0.5   #0.2 #0.4               #机器人身体高度
     grid_map.obstacles_inflation_z_up: 0.3 #0.4    #机器人上方碰撞膨胀                            参考：0.4
     grid_map.obstacles_inflation_z_down: 0.15 #0.1 #机器人下方碰撞膨胀    111   0.4                参考：0.2
@@ -58,10 +58,10 @@ scan_planner_node:
     manager.feasibility_tolerance: 0.5  #轨迹容差，越小越严格
     manager.planning_horizon: 3.5 #7.5       #局部规划范围
 
-    optimization.lambda_smooth: 1.1 #1.0   #平滑权重   轨迹不够平滑时增大
-    optimization.lambda_collision: 7.0 #1.0  #避障权重，越大就离障碍物越远
+    optimization.lambda_smooth: 1.0 #1.0   #平滑权重   轨迹不够平滑时增大
+    optimization.lambda_collision: 1.0 #1.0  #避障权重，越大就离障碍物越远
     optimization.lambda_feasibility: 0.1  #动力学约束权重   速度、加速度超限时增大
-    optimization.lambda_fitness: 1.2   #1.2 #1.0    #拟合初始轨迹权重  轨迹偏离参考路径太多时增大
+    optimization.lambda_fitness: 1.0   #1.2 #1.0    #拟合初始轨迹权重  轨迹偏离参考路径太多时增大
     optimization.dist0: 0.45 #0.6  #0.2   # 安全距离  台阶纵升：0.3
     optimization.max_vel: 0.5 #0.75
     optimization.vel_tolerance: 1.0   # 速度容差

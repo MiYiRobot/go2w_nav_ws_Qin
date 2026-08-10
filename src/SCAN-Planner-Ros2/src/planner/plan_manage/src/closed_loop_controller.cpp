@@ -24,12 +24,25 @@ public:
   {
     time_forward_ = declare_parameter<double>("time_forward", 0.8);
     heading_error_threshold_ = declare_parameter<double>("heading_error_threshold", 0.8);
-    kp_pos_ = declare_parameter<double>("kp_pos", 0.8);
-    kp_yaw_ = declare_parameter<double>("kp_yaw", 1.5);
-    max_vx_ = declare_parameter<double>("max_vx", 0.75);
-    max_vy_ = declare_parameter<double>("max_vy", 0.35);
-    max_vyaw_ = std::min(declare_parameter<double>("max_vyaw", 1.0), kMaxVYawLimit);
+    // kp_pos_ = declare_parameter<double>("kp_pos", 0.8);
+
+    kp_x_ = declare_parameter<double>("kp_x",1.0);
+    kd_x_ = declare_parameter<double>("kd_x",0.25);
+    kp_y_ = declare_parameter<double>("kp_y",0.25);
+    kd_y_ = declare_parameter<double>("kd_y",0.05);
+    kp_yaw_ = declare_parameter<double>("kp_yaw",1.2);
+    kd_yaw_ = declare_parameter<double>("kd_yaw",0.15);
+    max_vx_ = declare_parameter<double>("max_vx",0.55);
+    max_vy_ = declare_parameter<double>("max_vy",0.25);
+    max_vyaw_ = declare_parameter<double>("max_vyaw",0.6);
+    // kp_yaw_ = declare_parameter<double>("kp_yaw", 1.5);
+    // max_vx_ = declare_parameter<double>("max_vx", 0.75);
+    // max_vy_ = declare_parameter<double>("max_vy", 0.35);
+    // max_vyaw_ = std::min(declare_parameter<double>("max_vyaw", 1.0), kMaxVYawLimit);
     finish_dist_ = declare_parameter<double>("finish_dist", 0.15);
+    x_deadzone_ = declare_parameter<double>("x_deadzone", 0.05);
+    y_deadzone_ = declare_parameter<double>("y_deadzone", 0.05);
+    yaw_deadzone_ = declare_parameter<double>("yaw_deadzone", 0.05);
     
     declare_parameter<std::string>("start_navigation_topic", "/start_navigation");
     const auto start_navigation_topic = get_parameter("start_navigation_topic").as_string();
@@ -81,9 +94,9 @@ private:
   //估计当前机器人朝向
   double estimateDesiredYaw(double t_cur, const Eigen::Vector3d &pos_des) const
   {
-    const double t_look = std::min(traj_duration_, t_cur + time_forward_);
-    Eigen::Vector3d direction = traj_[0].evaluateDeBoorT(t_look) - pos_des;
-    if (direction.head<2>().squaredNorm() < 1e-4)
+    const double t_look = std::min(traj_duration_, t_cur + time_forward_);    //计算前瞻时间点
+    Eigen::Vector3d direction = traj_[0].evaluateDeBoorT(t_look) - pos_des;   //计算前瞻点位置方向偏差
+    if (direction.head<2>().squaredNorm() < 1e-4)   //判断当前点和前瞻点是否重合，若重合则使用速度方向
       direction = traj_[1].evaluateDeBoorT(t_cur);
     return direction.head<2>().squaredNorm() < 1e-4
         ? odom_yaw_ : std::atan2(direction.y(), direction.x());
@@ -125,6 +138,8 @@ private:
     traj_duration_ = traj_[0].getTimeSum();
     traj_id_ = msg->traj_id;
     exec_time_ = 0.0;
+    last_error_body_.setZero();
+    last_yaw_error_ = 0.0;
     last_update_time_ = now();
     receive_traj_ = true;
     if(!navigation_enable_)
@@ -165,8 +180,22 @@ private:
     if (dt < 0.0 || dt > 0.2) dt = 0.0;
     const double t_eval = std::min(exec_time_, traj_duration_);
     Eigen::Vector3d pos_des = traj_[0].evaluateDeBoorT(t_eval); //计算期望位置
+
+    //yaw轴进行处理
     const double yaw_error = normalizeAngle(estimateDesiredYaw(t_eval, pos_des) - odom_yaw_); //计算yaw偏差
-    const double yaw_command = std::clamp(kp_yaw_ * yaw_error, -max_vyaw_, max_vyaw_);
+    double v_yaw=0.0;
+    if(std::abs(yaw_error) >= yaw_deadzone_) //yaw偏差在死区外
+    {
+      v_yaw = kp_yaw_ * yaw_error + kd_yaw_ * (yaw_error - last_yaw_error_); //计算yaw速度
+    }
+    else    //yaw偏差在死区内
+    {
+      v_yaw = 0.0;
+    }
+    last_yaw_error_ = yaw_error; 
+    
+    const double yaw_command = std::clamp(v_yaw, -max_vyaw_, max_vyaw_);
+    
     if (std::abs(yaw_error) > heading_error_threshold_) //偏差过大只旋转不前进
     {
       publishExecutionFrozen(true);
@@ -181,17 +210,60 @@ private:
     pos_des = traj_[0].evaluateDeBoorT(exec_time_); //计算期望位置
     const Eigen::Vector3d vel_des = traj_[1].evaluateDeBoorT(exec_time_);   //根据b样条轨迹时间获取目标期望速度
     const Eigen::Vector2d pos_error(pos_des.x() - odom_pos_.x(), pos_des.y() - odom_pos_.y()); //计算位置误差
-    const Eigen::Vector2d vel_world = clampNorm(  //计算世界速度：轨迹前馈（期望速度）+P反馈
-        Eigen::Vector2d(vel_des.x(), vel_des.y()) + kp_pos_ * pos_error,
-        std::max(max_vx_, max_vy_));
+
     const double c = std::cos(odom_yaw_);
-    const double s = std::sin(odom_yaw_);
-    geometry_msgs::msg::Twist command;  //世界坐标系转成机器人自身坐标系
-    command.linear.x = std::clamp(c * vel_world.x() + s * vel_world.y(), -max_vx_, max_vx_);
-    command.linear.y = std::clamp(-s * vel_world.x() + c * vel_world.y(), -max_vy_, max_vy_);
+    const double s = std::sin(odom_yaw_); 
+
+    //世界误差
+    Eigen::Vector2d error_world(pos_des.x() - odom_pos_.x(), pos_des.y() - odom_pos_.y());
+    //转机器人坐标系
+    Eigen::Vector2d error_body;
+    error_body.x() = c * error_world.x() + s * error_world.y();
+    error_body.y() = -s * error_world.x() + c * error_world.y();
+    //期望速度转换
+    Eigen::Vector2d vel_world(vel_des.x(), vel_des.y());
+    Eigen::Vector2d vel_body;
+    //转机器人坐标系
+    vel_body.x() = c * vel_world.x() + s * vel_world.y();
+    vel_body.y() = -s * vel_world.x() + c * vel_world.y();
+    //计算机器人坐标系下的速度误差
+    double v_x,v_y;
+    //死区判断
+    if(std::abs(error_body.x()) >= x_deadzone_)
+    {
+      v_x = vel_body.x() + kp_x_ * error_body.x() + kd_x_ * (error_body.x() - last_error_body_.x());
+    }
+    else
+    {
+      v_x = vel_body.x();
+    }
+
+    if(std::abs(error_body.y()) >= y_deadzone_)
+    {
+      v_y = vel_body.y() + kp_y_ * error_body.y() + kd_y_ * (error_body.y() - last_error_body_.y());
+    }
+    else
+    {
+      v_y = vel_body.y();
+    }
+    
+    // double v_x = vel_body.x() + kp_x_ * error_body.x() + kd_x_ * (error_body.x() - last_error_body_.x());
+    // double v_y = vel_body.y() + kp_y_ * error_body.y() + kd_y_ * (error_body.y() - last_error_body_.y());
+
+    // const Eigen::Vector2d vel_world = clampNorm(  //计算世界速度：轨迹前馈（期望速度）+P反馈
+    //     Eigen::Vector2d(vel_des.x(), vel_des.y()) + kp_pos_ * pos_error,
+    //     std::max(max_vx_, max_vy_));
+  
+    geometry_msgs::msg::Twist command;  
+    command.linear.x = std::clamp(v_x, -max_vx_, max_vx_);
+    command.linear.y = std::clamp(v_y, -max_vy_, max_vy_);
     command.angular.z = yaw_command;
+    last_error_body_ = error_body;
+
+    // command.linear.x = std::clamp(c * vel_world.x() + s * vel_world.y(), -max_vx_, max_vx_);
+    // command.linear.y = std::clamp(-s * vel_world.x() + c * vel_world.y(), -max_vy_, max_vy_);
     if (exec_time_ >= traj_duration_ && pos_error.norm() < finish_dist_)
-      command = geometry_msgs::msg::Twist();
+      command = geometry_msgs::msg::Twist();      // 到达终点后停止
     cmd_vel_pub_->publish(command);
   }
 
@@ -246,8 +318,12 @@ private:
   double odom_yaw_{0.0};
   double exec_time_{0.0};
   rclcpp::Time last_update_time_{0, 0, RCL_ROS_TIME};
-  double time_forward_, heading_error_threshold_, kp_pos_, kp_yaw_;
+  double time_forward_, heading_error_threshold_;
+  double kp_x_, kp_y_, kd_x_, kd_y_, kp_yaw_,kd_yaw_;
+  Eigen::Vector2d last_error_body_{Eigen::Vector2d::Zero()};
+  double last_yaw_error_{0.0};
   double max_vx_, max_vy_, max_vyaw_, finish_dist_;
+  double x_deadzone_{0.0}, y_deadzone_{0.0}, yaw_deadzone_{0.0};
   bool navigation_enable_{false};
 };
 }  // namespace scan_planner

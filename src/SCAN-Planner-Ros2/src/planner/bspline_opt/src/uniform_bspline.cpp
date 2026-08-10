@@ -57,6 +57,7 @@ namespace scan_planner
 
   Eigen::MatrixXd UniformBspline::getControlPoint() { return control_points_; }
 
+  //给定一个时间参数 u，通过 De Boor 算法计算 B-spline 曲线在该位置上的坐标点
   Eigen::VectorXd UniformBspline::evaluateDeBoor(const double &u) const
   {
 
